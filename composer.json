@@ -1,0 +1,22 @@
+{
+  "name": "fillup/array2xml",
+  "description": "Library for converting arrays to XML",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Phillip Shipley",
+      "email": "phillip.shipley@gmail.com"
+    }
+  ],
+  "minimum-stability": "stable",
+  "require": {},
+  "require-dev": {
+    "phpunit/phpunit": "^4.8.24"
+  },
+  "autoload": {
+    "psr-4": {
+      "fillup\\": "src/"
+    }
+  }
+}
