@@ -18,7 +18,7 @@ class A2X
     public function __construct($array, $schema = [], $version = '1.0', $encoding = 'UTF-8')
     {
         $this->xml = sprintf('<?xml version="%s" encoding="%s"?>', $version, $encoding);
-        $this->xml = $this->toXml($array, $schema, null);
+        $this->xml .= $this->toXml($array, $schema, null);
     }
 
     /**
