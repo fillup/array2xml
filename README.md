@@ -13,12 +13,13 @@ This library separates the array data from schema data so it is ideal for use in
 needed but you don't want to put that on users of your library. When instantiating the ```fillup\A2X``` class 
 you pass the data array as the first parameter and optionally provide a second array parameter with schema details.
 
-Currently it only supports defining how to serialize array data types, but can be updated to support namespaces and 
-attributes without much effort, I just haven't needed that yet.
+Currently this library can serialize arrays with support for attributes and defining what non-associative array 
+elements should be sent as.
 
 The schema array is a simple format of an associative array where the key is the path/position in the array and the 
-value is an array with schema details. Currently it only supports an element with the name ```sendItemsAs``` to define 
-the wrapping element name for array data types. 
+value is an array with schema details. Currently it supports an element with the name ```sendItemsAs``` to define 
+the wrapping element name for array data types. It also supports an element named ```attributes``` which is an array 
+of key names for child elements that should be treated as attributes to the parent element. See example below.
 
 A2X recognizes simple forms of plurals, so if the array data element has a name of ```contacts``` and you do not 
 specify what its items should be sent as it will strip the trailing ```s``` and send each as ```contact```.
@@ -31,6 +32,7 @@ use fillup\A2X;
 
 $data = [
     'person' => [
+        'attributeName' => 'attribute value',
         'name' => [
             'given' => 'first',
             'surname' => 'last',
@@ -57,8 +59,18 @@ $data = [
 ];
 
 $schema = [
+    '/person' => [
+        'attributes' => [
+            'attributeName',
+        ],
+    ],
     '/person/contacts' => [
         'sendItemsAs' => 'contact',
+    ],
+    '/person/contacts/contact' => [
+        'attributes' => [
+            'type',
+        ],
     ],
 ];
 
@@ -69,7 +81,8 @@ $xml = $a2x->asXml();
 In the above example, ```$xml``` will contain the string:
 
 ```xml
-<person>
+<?xml version="1.0" encoding="UTF-8"?>
+<person attributeName="attribute value">
     <name>
         <given>first</given>
         <surname>last</surname>
@@ -83,12 +96,10 @@ In the above example, ```$xml``` will contain the string:
     </address>
     <age>40</age>
     <contacts>
-        <contact>
-            <type>email</type>
+        <contact type="email">
             <value>user@domain.com</value>
         </contact>
-        <contact>
-            <type>mobile</type>
+        <contact type="mobile">
             <value>11235551234</value>
         </contact>
     </contacts>

@@ -18,7 +18,7 @@ class A2X
     public function __construct($array, $schema = [], $version = '1.0', $encoding = 'UTF-8')
     {
         $this->xml = sprintf('<?xml version="%s" encoding="%s"?>', $version, $encoding);
-        $this->xml .= $this->toXml($array, $schema, null);
+        $this->xml .= $this->toXml($array, $schema);
     }
 
     /**
@@ -48,19 +48,76 @@ class A2X
 
         if (self::is_assoc($array)) {
             foreach ($array as $key => $value) {
-                $xml .= sprintf('<%s>', $key);
-                $xml .= $this->stringValue($value, $schema, $position . '/' . $key);
+                /*
+                 * Update $position
+                 */
+                $currentPosition = $position . '/' . $key;
+
+                /*
+                 * Check for any attributes defined for this position and generate string of them
+                 */
+                $attributeKeys = $this->getAttributes($schema, $currentPosition);
+                $attributeArray = [];
+                if ($attributeKeys !== null) {
+                    foreach($attributeKeys as $attr) {
+                        if (isset($value[$attr])) {
+                            // Append to string as attribute
+                            $attributeArray[] = sprintf('%s="%s"', $attr, $value[$attr]);
+                            // Unset from array so doesn't get serialized as an element
+                            unset($value[$attr]);
+                        }
+                    }
+                }
+                $attributeString = '';
+                if (count($attributeArray) > 0) {
+                    $attributeString = ' ' . join(' ', $attributeArray);
+                }
+
+                /*
+                 * Append string to $xml
+                 */
+                $xml .= sprintf('<%s%s>', $key, $attributeString);
+                $xml .= $this->stringValue($value, $schema, $currentPosition);
                 $xml .= sprintf('</%s>', $key);
             }
         } else {
             foreach ($array as $element) {
-                $openTag = $closeTag = '';
+                $elementName = 'item';
                 $sendItemAs = $this->getItemsSendAs($schema, $position);
                 if ($sendItemAs) {
-                    $openTag = sprintf('<%s>', $sendItemAs);
-                    $closeTag = sprintf('</%s>', $sendItemAs);
+                    /*
+                     * Update $position
+                     */
+                    $currentPosition = $position . '/' . $sendItemAs;
+                    $elementName = $sendItemAs;
                 }
-                $xml .= $openTag . $this->stringValue($element, $schema, $position) . $closeTag;
+
+                /*
+                 * Check for any attributes defined for this position and generate string of them
+                 */
+                $attributeKeys = $this->getAttributes($schema, $currentPosition);
+                $attributeArray = [];
+                if ($attributeKeys !== null) {
+                    foreach($attributeKeys as $attr) {
+                        if (isset($element[$attr])) {
+                            // Append to string as attribute
+                            $attributeArray[] = sprintf('%s="%s"', $attr, $element[$attr]);
+                            // Unset from array so doesn't get serialized as an element
+                            unset($element[$attr]);
+                        }
+                    }
+                }
+                $attributeString = '';
+                if (count($attributeArray) > 0) {
+                    $attributeString = ' ' . join(' ', $attributeArray);
+                }
+
+                /*
+                 * Append string to $xml
+                 */
+                $xml .= sprintf('<%s%s>', $elementName, $attributeString);
+                $xml .= $this->stringValue($element, $schema, $currentPosition);
+                $xml .= sprintf('</%s>', $elementName);
             }
         }
 
@@ -105,6 +162,23 @@ class A2X
                 return substr($current, 0, strlen($current) - 1);
             }
         }
+    }
+
+    /**
+     * @param array $schema
+     * @param string $position
+     * @return null|array
+     */
+    public function getAttributes($schema, $position)
+    {
+        /*
+         * Check schema for attributes for given position
+         */
+        if (isset($schema[$position]['attributes']) && is_array($schema[$position]['attributes'])) {
+            return $schema[$position]['attributes'];
+        }
+
+        return null;
     }
 
     /**
