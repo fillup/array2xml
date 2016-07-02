@@ -54,6 +54,32 @@ class A2X
                 $currentPosition = $position . '/' . $key;
 
                 /*
+                 * Check for namespace definitions
+                 */
+                $namespaceDefsString = '';
+                $namespaceDefsArray = [];
+                if ($position == '') {
+                    $namespaceDefs = $this->getNamespaceDefs($schema);
+                    if ($namespaceDefs !== null) {
+                        foreach ($namespaceDefs as $prefix => $uri) {
+                            $namespaceDefsArray[] = sprintf('xmlns:%s="%s"', $prefix, $uri);
+                        }
+                        if (count($namespaceDefsArray) > 0) {
+                            $namespaceDefsString = ' ' . join(' ', $namespaceDefsArray);
+                        }
+                    }
+                }
+
+                /*
+                 * Check for namespace for this position
+                 */
+                $posNamespace = $this->getPositionNamespace($schema, $currentPosition);
+                $posNamespaceString = '';
+                if ($posNamespace !== null) {
+                    $posNamespaceString = $posNamespace . ':';
+                }
+
+                /*
                  * Check for any attributes defined for this position and generate string of them
                  */
                 $attributeKeys = $this->getAttributes($schema, $currentPosition);
@@ -76,9 +102,9 @@ class A2X
                 /*
                  * Append string to $xml
                  */
-                $xml .= sprintf('<%s%s>', $key, $attributeString);
+                $xml .= sprintf('<%s%s%s%s>', $posNamespaceString, $key, $namespaceDefsString, $attributeString);
                 $xml .= $this->stringValue($value, $schema, $currentPosition);
-                $xml .= sprintf('</%s>', $key);
+                $xml .= sprintf('</%s%s>', $posNamespaceString, $key);
             }
         } else {
             foreach ($array as $element) {
@@ -90,6 +116,15 @@ class A2X
                      */
                     $currentPosition = $position . '/' . $sendItemAs;
                     $elementName = $sendItemAs;
+                }
+
+                /*
+                 * Check for namespace for this position
+                 */
+                $posNamespace = $this->getPositionNamespace($schema, $currentPosition);
+                $posNamespaceString = '';
+                if ($posNamespace !== null) {
+                    $posNamespaceString = $posNamespace . ':';
                 }
 
                 /*
@@ -115,9 +150,9 @@ class A2X
                 /*
                  * Append string to $xml
                  */
-                $xml .= sprintf('<%s%s>', $elementName, $attributeString);
+                $xml .= sprintf('<%s%s%s>', $posNamespaceString, $elementName, $attributeString);
                 $xml .= $this->stringValue($element, $schema, $currentPosition);
-                $xml .= sprintf('</%s>', $elementName);
+                $xml .= sprintf('</%s%s>', $posNamespaceString, $elementName);
             }
         }
 
@@ -169,6 +204,23 @@ class A2X
      * @param string $position
      * @return null|array
      */
+    public function getPositionNamespace($schema, $position)
+    {
+        /*
+         * Check schema for namespace for this position
+         */
+        if (isset($schema[$position]['namespace']) && is_string($schema[$position]['namespace'])) {
+            return $schema[$position]['namespace'];
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array $schema
+     * @param string $position
+     * @return null|array
+     */
     public function getAttributes($schema, $position)
     {
         /*
@@ -176,6 +228,19 @@ class A2X
          */
         if (isset($schema[$position]['attributes']) && is_array($schema[$position]['attributes'])) {
             return $schema[$position]['attributes'];
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array $schema
+     * @return null|array
+     */
+    public function getNamespaceDefs($schema)
+    {
+        if (isset($schema['@namespaces']) && is_array($schema['@namespaces'])) {
+            return $schema['@namespaces'];
         }
 
         return null;

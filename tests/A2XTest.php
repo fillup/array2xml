@@ -8,7 +8,7 @@ include __DIR__ . '/../vendor/autoload.php';
 
 class A2XTest extends \PHPUnit_Framework_Testcase
 {
-    public function testBasic()
+    public function testIt()
     {
         $array = [
             'person' => [
@@ -46,15 +46,21 @@ class A2XTest extends \PHPUnit_Framework_Testcase
             ],
             '/person/contacts' => [
                 'sendItemsAs' => 'contact',
+                'namespace' => 'ns1',
             ],
             '/person/contacts/contact' => [
                 'attributes' => [
                     'type',
                 ],
+                'namespace' => 'ns2',
+            ],
+            '@namespaces' => [
+                'ns1' => 'http://namespaceone.com',
+                'ns2' => 'http://namespacetwo.com',
             ],
         ];
 
-        $expectedXml = '<?xml version="1.0" encoding="UTF-8"?><person attributeName="attribute value"><name><given>first</given><surname>last</surname></name><address><street1>123 Somewhere</street1><street2></street2><city>Anytown</city><state>AA</state><country>USA</country></address><age>40</age><contacts><contact type="email"><value>user@domain.com</value></contact><contact type="mobile"><value>11235551234</value></contact></contacts></person>';
+        $expectedXml = '<?xml version="1.0" encoding="UTF-8"?><person xmlns:ns1="http://namespaceone.com" xmlns:ns2="http://namespacetwo.com" attributeName="attribute value"><name><given>first</given><surname>last</surname></name><address><street1>123 Somewhere</street1><street2></street2><city>Anytown</city><state>AA</state><country>USA</country></address><age>40</age><ns1:contacts><ns2:contact type="email"><value>user@domain.com</value></ns2:contact><ns2:contact type="mobile"><value>11235551234</value></ns2:contact></ns1:contacts></person>';
         $a2x = new A2X($array, $schema);
         $this->assertEquals($expectedXml, $a2x->asXml());
 
