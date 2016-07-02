@@ -3,7 +3,7 @@ array2xml is a simple library for converting arrays to XML
  
 ## Why?
 There are several libraries for converting arrays to XML, but they all require special syntax for annotating schema 
-deatils for things like what to send array items as, attributes, and namespaces.
+details for things like what to send array items as, attributes, and namespaces.
 
 I was looking for a solution that would allow consumers of other libraries to provide an array without needing to know
 those xml schema details.
@@ -16,15 +16,13 @@ you pass the data array as the first parameter and optionally provide a second a
 This library supports serializing associative arrays, normal arrays, adding attributes, and namespaces. 
 
 The schema array is a simple format of an associative array where the key is the path/position in the array and the 
-value is an array with schema details. Currently it supports an element with the name ```sendItemsAs``` to define 
-the wrapping element name for array data types. It also supports an element named ```attributes``` which is an array 
-of key names for child elements that should be treated as attributes to the parent element. See example below.
+value is an array with schema details. 
 
 ### Associative arrays
 Associative arrays are the easiest thing to serialize to XML because the format ```['key' => 'value']``` very naturally 
 maps to ```<key>value</key>```.
 
-### Non-associative array types
+### Non-associative arrays
 In PHP we represent normal arrays something like ```['item1', 'item2', 'item3']```, but when serializing to XML 
 this is a challenge because each element must be wrapped with a tag. This can be done by using the ```sendItemsAs``` 
 element in the schema for a given position. See the example below where the contacts element in the array is an array 
@@ -70,6 +68,10 @@ attribute with a single string value that should map to one of the prefixes defi
 below for how ```ns1``` and ```ns2``` are defined in ```@attributes``` and then used for positions 
 ```/person/contacts``` and ```/person/contacts/contact```.
 
+If you want to have all elements at and under a specific position to have the same namespace you can use the 
+```childNamespace``` attribute in the schema. This will apply the given namespace to all elements below the given 
+position. 
+
 ## Usage
 
 ```php
@@ -113,12 +115,12 @@ $schema = [
     '/person/contacts' => [
         'sendItemsAs' => 'contact',
         'namespace' => 'ns1',
+        'childNamespace' => 'ns2',
     ],
     '/person/contacts/contact' => [
         'attributes' => [
             'type',
         ],
-        'namespace' => 'ns2',
     ],
     '@namespaces' => [
         'ns1' => 'http://namespaceone.com',
@@ -149,10 +151,10 @@ In the above example, ```$xml``` will contain the string:
     <age>40</age>
     <ns1:contacts>
         <ns2:contact type="email">
-            <value>user@domain.com</value>
+            <ns2:value>user@domain.com</ns2:value>
         </ns2:contact>
         <ns2:contact type="mobile">
-            <value>11235551234</value>
+            <ns2:value>11235551234</ns2:value>
         </ns2:contact>
     </ns1:contacts>
 </person>

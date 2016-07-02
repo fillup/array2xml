@@ -213,6 +213,23 @@ class A2X
             return $schema[$position]['namespace'];
         }
 
+        /*
+         * Check if any parent elements have defined a namespace for all children
+         */
+        $parts = explode('/', $position);
+        if (count($parts) > 0) {
+            if ($parts[0] == '') {
+                unset($parts[0]);
+            }
+            $path = '';
+            foreach ($parts as $part) {
+                $path .= '/' . $part;
+                if (isset($schema[$path]['childNamespace']) && is_string($schema[$path]['childNamespace'])) {
+                    return $schema[$path]['childNamespace'];
+                }
+            }
+        }
+
         return null;
     }
 

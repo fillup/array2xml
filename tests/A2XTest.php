@@ -47,12 +47,12 @@ class A2XTest extends \PHPUnit_Framework_Testcase
             '/person/contacts' => [
                 'sendItemsAs' => 'contact',
                 'namespace' => 'ns1',
+                'childNamespace' => 'ns2',
             ],
             '/person/contacts/contact' => [
                 'attributes' => [
                     'type',
                 ],
-                'namespace' => 'ns2',
             ],
             '@namespaces' => [
                 'ns1' => 'http://namespaceone.com',
@@ -60,7 +60,7 @@ class A2XTest extends \PHPUnit_Framework_Testcase
             ],
         ];
 
-        $expectedXml = '<?xml version="1.0" encoding="UTF-8"?><person xmlns:ns1="http://namespaceone.com" xmlns:ns2="http://namespacetwo.com" attributeName="attribute value"><name><given>first</given><surname>last</surname></name><address><street1>123 Somewhere</street1><street2></street2><city>Anytown</city><state>AA</state><country>USA</country></address><age>40</age><ns1:contacts><ns2:contact type="email"><value>user@domain.com</value></ns2:contact><ns2:contact type="mobile"><value>11235551234</value></ns2:contact></ns1:contacts></person>';
+        $expectedXml = '<?xml version="1.0" encoding="UTF-8"?><person xmlns:ns1="http://namespaceone.com" xmlns:ns2="http://namespacetwo.com" attributeName="attribute value"><name><given>first</given><surname>last</surname></name><address><street1>123 Somewhere</street1><street2></street2><city>Anytown</city><state>AA</state><country>USA</country></address><age>40</age><ns1:contacts><ns2:contact type="email"><ns2:value>user@domain.com</ns2:value></ns2:contact><ns2:contact type="mobile"><ns2:value>11235551234</ns2:value></ns2:contact></ns1:contacts></person>';
         $a2x = new A2X($array, $schema);
         $this->assertEquals($expectedXml, $a2x->asXml());
 
