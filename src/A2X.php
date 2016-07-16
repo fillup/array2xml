@@ -110,11 +110,12 @@ class A2X
             foreach ($array as $element) {
                 $elementName = 'item';
                 $sendItemAs = $this->getItemsSendAs($schema, $position);
+                /*
+                 * Update $currentPosition
+                 */
+                $currentPosition = $position;
                 if ($sendItemAs) {
-                    /*
-                     * Update $position
-                     */
-                    $currentPosition = $position . '/' . $sendItemAs;
+                    $currentPosition .= '/' . $sendItemAs;
                     $elementName = $sendItemAs;
                 }
 
