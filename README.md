@@ -72,6 +72,57 @@ If you want to have all elements at and under a specific position to have the sa
 ```childNamespace``` attribute in the schema. This will apply the given namespace to all elements below the given 
 position. 
 
+### List elements without a parent wrapping tag
+If you need to generate a list of elements without a wrapping parent tag, the schema setting for ```includeWrappingTag``` 
+may be set to ```false```. By default it is considered ```true``` if not present. This is useful in the following example 
+where you have a list of ```children``` but want them each listed as a ```child``` element instead of as 
+```<children><child></child><child></child></children>```.
+
+```php
+<?php
+use fillup\A2X;
+
+$data = [
+    'person' => [
+        'name' => 'Daddio',
+        'children' => [
+            [
+                'name' => 'Older Brother',
+            ],
+            [
+                'name' => 'Little Sister',
+            [
+        ]
+    ]
+];
+
+$schema = [
+    '/person/children' => [
+        'sendItemsAs' => 'child',
+        'includeWrappingTag' => false,
+    ],
+];
+
+$a2x = new A2X($data, $schema);
+$xml = $a2x->asXml();
+```
+
+In that example ```$xml``` (if formatted) would be:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<person>
+    <name>Daddio</name>
+    <child>
+        <name>Older Brother</name>
+    </child>
+    <child>
+        <name>Little Sister</name>
+    </child>
+</person>
+```
+
+
 ## Usage
 
 ```php
