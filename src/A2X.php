@@ -100,11 +100,21 @@ class A2X
                 }
 
                 /*
+                 * Check if this tag should be included as a wrapper for children,
+                 * or just include children
+                 */
+                $includeWrappingTag = $this->getIncludeWrappingTag($schema, $currentPosition);
+
+                /*
                  * Append string to $xml
                  */
-                $xml .= sprintf('<%s%s%s%s>', $posNamespaceString, $key, $namespaceDefsString, $attributeString);
+                if ($includeWrappingTag) {
+                    $xml .= sprintf('<%s%s%s%s>', $posNamespaceString, $key, $namespaceDefsString, $attributeString);
+                }
                 $xml .= $this->stringValue($value, $schema, $currentPosition);
-                $xml .= sprintf('</%s%s>', $posNamespaceString, $key);
+                if ($includeWrappingTag) {
+                    $xml .= sprintf('</%s%s>', $posNamespaceString, $key);
+                }
             }
         } else {
             foreach ($array as $element) {
@@ -149,11 +159,21 @@ class A2X
                 }
 
                 /*
+                 * Check if this tag should be included as a wrapper for children,
+                 * or just include children
+                 */
+                $includeWrappingTag = $this->getIncludeWrappingTag($schema, $currentPosition);
+
+                /*
                  * Append string to $xml
                  */
-                $xml .= sprintf('<%s%s%s>', $posNamespaceString, $elementName, $attributeString);
+                if ($includeWrappingTag) {
+                    $xml .= sprintf('<%s%s%s>', $posNamespaceString, $elementName, $attributeString);
+                }
                 $xml .= $this->stringValue($element, $schema, $currentPosition);
-                $xml .= sprintf('</%s%s>', $posNamespaceString, $elementName);
+                if ($includeWrappingTag) {
+                    $xml .= sprintf('</%s%s>', $posNamespaceString, $elementName);
+                }
             }
         }
 
@@ -262,6 +282,23 @@ class A2X
         }
 
         return null;
+    }
+
+    /**
+     * @param array $schema
+     * @param string $position
+     * @return bool
+     */
+    public function getIncludeWrappingTag($schema, $position)
+    {
+        /*
+         * Check schema to see if this position should not be included as a wrapping tag
+         */
+        if (isset($schema[$position]['includeWrappingTag'])) {
+            return boolval($schema[$position]['includeWrappingTag']);
+        }
+
+        return true;
     }
 
     /**
