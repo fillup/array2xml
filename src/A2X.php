@@ -295,7 +295,7 @@ class A2X
          * Check schema to see if this position should not be included as a wrapping tag
          */
         if (isset($schema[$position]['includeWrappingTag'])) {
-            return boolval($schema[$position]['includeWrappingTag']);
+            return (bool) $schema[$position]['includeWrappingTag'];
         }
 
         return true;
@@ -316,6 +316,6 @@ class A2X
      * @return bool
      */
     public static function is_assoc(array $array) {
-        return (bool)count(array_filter(array_keys($array), 'is_string'));
+        return (bool) count(array_filter(array_keys($array), 'is_string'));
     }
 }
